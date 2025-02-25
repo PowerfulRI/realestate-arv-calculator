@@ -1,0 +1,5 @@
+version: '3'
+
+services:
+  arv-calculator:
+    command: --sample --report --output /reports/sample_report.md

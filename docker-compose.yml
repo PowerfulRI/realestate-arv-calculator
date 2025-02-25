@@ -1,0 +1,14 @@
+version: '3'
+
+services:
+  arv-calculator:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ./config:/config
+      - ./reports:/reports
+    environment:
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - ATTOM_API_KEY=${ATTOM_API_KEY}
+    command: --address "123 Main St, Anytown, CA" --report --output /reports/analysis_report.md
