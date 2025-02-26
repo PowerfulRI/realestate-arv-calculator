@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real Estate ARV Calculator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        h1 {
+            color: #2c3e50;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        #sample-button {
+            background-color: #2ecc71;
+        }
+        #sample-button:hover {
+            background-color: #27ae60;
+        }
+        #loading {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+        }
+        #results {
+            display: none;
+            margin-top: 30px;
+            border: 1px solid #ddd;
+            padding: 20px;
+            border-radius: 4px;
+            background-color: #f9f9f9;
+        }
+        .error {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Real Estate ARV Calculator</h1>
+        <p>Calculate the After Repair Value (ARV) for real estate investment properties</p>
+    </header>
+
+    <div class="form-container">
+        <div class="form-group">
+            <label for="address">Property Address:</label>
+            <input type="text" id="address" name="address" placeholder="Enter full property address (e.g., 123 Main St, Anytown, CA 12345)" required>
+        </div>
+        
+        <button id="analyze-button">Analyze Property</button>
+        <button id="sample-button">Try Sample Property</button>
+    </div>
+
+    <div id="loading">
+        <p>Analyzing property data... This may take a few moments.</p>
+    </div>
+
+    <div id="results">
+        <h2>Analysis Results</h2>
+        <div id="property-info"></div>
+        <div id="arv-estimate"></div>
+        <div id="renovation-costs"></div>
+        <div id="investment-analysis"></div>
+    </div>
+
+    <script>
+        document.getElementById('analyze-button').addEventListener('click', function() {
+            const address = document.getElementById('address').value;
+            if (!address) {
+                alert('Please enter a property address');
+                return;
+            }
+            
+            analyzeProperty(address);
+        });
+
+        document.getElementById('sample-button').addEventListener('click', function() {
+            loadSampleData();
+        });
+
+        function analyzeProperty(address) {
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('results').style.display = 'none';
+            
+            const formData = new FormData();
+            formData.append('address', address);
+            
+            fetch('/analyze', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('loading').style.display = 'none';
+                
+                if (data.error) {
+                    showError(data.error);
+                    return;
+                }
+                
+                displayResults(data);
+            })
+            .catch(error => {
+                document.getElementById('loading').style.display = 'none';
+                showError('Error analyzing property: ' + error.message);
+            });
+        }
+
+        function loadSampleData() {
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('results').style.display = 'none';
+            
+            fetch('/sample')
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('loading').style.display = 'none';
+                
+                if (data.error) {
+                    showError(data.error);
+                    return;
+                }
+                
+                displayResults(data);
+            })
+            .catch(error => {
+                document.getElementById('loading').style.display = 'none';
+                showError('Error loading sample data: ' + error.message);
+            });
+        }
+
+        function displayResults(data) {
+            const results = document.getElementById('results');
+            results.style.display = 'block';
+            
+            // Property Information
+            const propertyInfo = document.getElementById('property-info');
+            propertyInfo.innerHTML = `
+                <h3>Property Information</h3>
+                <p><strong>Address:</strong> ${data.property.address || 'Sample Property'}</p>
+                <p><strong>Current Value:</strong> $${formatNumber(data.property.current_value || data.property.estimated_value || 0)}</p>
+                <p><strong>Square Footage:</strong> ${formatNumber(data.property.square_footage || 0)} sq ft</p>
+                <p><strong>Bedrooms:</strong> ${data.property.bedrooms || 'N/A'}</p>
+                <p><strong>Bathrooms:</strong> ${data.property.bathrooms || 'N/A'}</p>
+            `;
+            
+            // ARV Estimate
+            const arvEstimate = document.getElementById('arv-estimate');
+            arvEstimate.innerHTML = `
+                <h3>After Repair Value (ARV) Estimate</h3>
+                <p><strong>Estimated ARV:</strong> $${formatNumber(data.arv || 0)}</p>
+                <p><strong>Price per Square Foot:</strong> $${formatNumber((data.arv / (data.property.square_footage || 1)).toFixed(2))}/sq ft</p>
+            `;
+            
+            // Renovation Costs
+            const renovationCosts = document.getElementById('renovation-costs');
+            renovationCosts.innerHTML = `
+                <h3>Renovation Cost Estimate</h3>
+                <p><strong>Total Renovation Costs:</strong> $${formatNumber(data.renovation_costs || 0)}</p>
+            `;
+            
+            // Investment Analysis
+            const maxPurchasePrice = calculateMaxPurchase(data.arv || 0, data.renovation_costs || 0);
+            const investmentAnalysis = document.getElementById('investment-analysis');
+            investmentAnalysis.innerHTML = `
+                <h3>Investment Analysis</h3>
+                <p><strong>Maximum Purchase Price (70% Rule):</strong> $${formatNumber(maxPurchasePrice)}</p>
+                <p><strong>Potential Profit:</strong> $${formatNumber((data.arv || 0) - (data.property.current_value || 0) - (data.renovation_costs || 0))}</p>
+            `;
+        }
+
+        function showError(message) {
+            const results = document.getElementById('results');
+            results.style.display = 'block';
+            results.innerHTML = `<p class="error">${message}</p>`;
+        }
+
+        function calculateMaxPurchase(arv, renovationCosts) {
+            return (arv * 0.7) - renovationCosts;
+        }
+
+        function formatNumber(num) {
+            return parseFloat(num).toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 0});
+        }
+    </script>
+</body>
+</html>

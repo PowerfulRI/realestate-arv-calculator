@@ -8,7 +8,10 @@ services:
     volumes:
       - ./config:/config
       - ./reports:/reports
+    ports:
+      - "5000:5000"
     environment:
+      - PORT=5000
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
       - ATTOM_API_KEY=${ATTOM_API_KEY}
-    command: --address "123 Main St, Anytown, CA" --report --output /reports/analysis_report.md
+    command: --web

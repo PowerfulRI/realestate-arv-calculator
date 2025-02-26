@@ -40,7 +40,7 @@ A comprehensive tool for real estate investors, particularly those focusing on h
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/realestate-arv-calculator.git
+git clone https://github.com/PowerfulRI/realestate-arv-calculator.git
 cd realestate-arv-calculator
 
 # Create and activate a virtual environment (optional but recommended)
@@ -56,6 +56,36 @@ export ATTOM_API_KEY="your_attom_api_key_here"  # For ATTOM Data Solutions API
 ```
 
 ## Usage
+
+### Web Interface (Recommended for most users)
+
+The easiest way to use the calculator is through the web interface:
+
+```bash
+# Using Docker (recommended)
+docker-compose up
+
+# Or run locally
+export FLASK_APP=src.realestate_arv_app.ui.web_app
+export FLASK_ENV=development
+flask run
+```
+
+Then open your browser to http://localhost:5000 to access the web interface.
+
+### Deploying to a Hosting Service
+
+To deploy to a hosting service like Heroku:
+
+1. Create an account on the hosting service
+2. Connect your GitHub repository
+3. Set the environment variables:
+   - ANTHROPIC_API_KEY: Your Claude API key (optional)
+   - ATTOM_API_KEY: Your ATTOM Data API key (optional)
+4. Deploy the application
+5. Open the provided URL to access the web interface
+
+### Command Line Usage
 
 Using the convenience script:
 ```bash
@@ -84,6 +114,24 @@ python -m src.realestate_arv_app.main --address "123 Main St, Anytown, CA 12345"
 python -m src.realestate_arv_app.main --sample --debug
 ```
 
+## Docker Deployment
+
+The easiest way to run the application is using Docker:
+
+```bash
+# Build and run with Docker Compose
+docker-compose up
+
+# Or build and run manually
+docker build -t arv-calculator .
+docker run -p 5000:5000 \
+  -e ANTHROPIC_API_KEY=your_api_key \
+  -e ATTOM_API_KEY=your_api_key \
+  arv-calculator
+```
+
+Then access the web interface at http://localhost:5000
+
 ## Project Structure
 
 ```
@@ -99,6 +147,9 @@ src/realestate_arv_app/
 ├── analysis/
 │   ├── comps_analyzer.py       # Comparable property analysis
 │   └── renovation_calculator.py # Renovation cost estimation
+├── ui/
+│   ├── web_app.py              # Flask web application
+│   └── templates/              # HTML templates
 ├── utils/
 │   └── geospatial.py           # Geospatial calculation utilities
 ├── scripts/
@@ -116,6 +167,7 @@ src/realestate_arv_app/
 - Anthropic API key for Claude AI integration (optional)
 - ATTOM Data Solutions API key for property data (optional)
 - BeautifulSoup for HTML parsing
+- Flask for web interface
 - Pandas, NumPy for data analysis
 
 ## Dealing with Anti-Scraping Measures
@@ -134,19 +186,10 @@ For more reliable data access, the application supports the ATTOM Data Solutions
 - Obtain an API key and set the ATTOM_API_KEY environment variable
 - The application will automatically use the API when available or fall back to web scraping
 
-## Planned Enhancements
-
-- Web-based user interface
-- Mobile app for on-site property evaluation
-- Integration with more real estate data providers
-- Advanced machine learning models for ARV prediction
-- Export and reporting functionality
-- User accounts with saved properties and analysis
-
 ## License
 
 MIT
 
 ## Contributors
 
-- Your Name (@yourusername)
+- Your Name (@PowerfulRI)

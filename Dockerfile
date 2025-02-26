@@ -22,17 +22,22 @@ RUN CHROME_DRIVER_VERSION=$(wget -qO- https://chromedriver.storage.googleapis.co
     && rm chromedriver_linux64.zip \
     && chmod +x /usr/local/bin/chromedriver
 
-# Copy the application files
-COPY dist/realestate_arv_app-1.0.0-py3-none-any.whl .
+# Copy requirements and install dependencies
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy the application code
+COPY ./src /app/src
+COPY setup.py .
 COPY README.md .
 
-# Install the application
-RUN pip install --no-cache-dir realestate_arv_app-1.0.0-py3-none-any.whl
+# Install the application in development mode
+RUN pip install -e .
 
 # Create a config directory for API keys
 RUN mkdir -p /config
 
-# Create an entrypoint script
+# Create an entrypoint script for web mode
 RUN echo '#!/bin/bash\n\
 # Load environment variables from config if it exists\n\
 if [ -f "/config/config.env" ]; then\n\
@@ -40,9 +45,19 @@ if [ -f "/config/config.env" ]; then\n\
     source "/config/config.env"\n\
     set +a\n\
 fi\n\
-# Run the calculator\n\
-arv-calculator "$@"\n' > /entrypoint.sh \
+\n\
+# Check if web mode is enabled\n\
+if [ "$1" = "--web" ]; then\n\
+    # Run the web application with gunicorn\n\
+    exec gunicorn --bind 0.0.0.0:${PORT:-5000} --workers 2 --threads 4 "realestate_arv_app.ui.web_app:app"\n\
+else\n\
+    # Run the CLI calculator\n\
+    exec python -m realestate_arv_app.main "$@"\n\
+fi\n' > /entrypoint.sh \
     && chmod +x /entrypoint.sh
 
+# Expose the web port
+EXPOSE 5000
+
 ENTRYPOINT ["/entrypoint.sh"]
-CMD ["--help"]
+CMD ["--web"]
