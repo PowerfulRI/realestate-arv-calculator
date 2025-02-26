@@ -3,7 +3,8 @@ from setuptools import setup, find_packages
 setup(
     name="realestate_arv_app",
     version="1.0.0",
-    packages=find_packages(),
+    packages=find_packages(where="src"),
+    package_dir={"": "src"},
     install_requires=[
         'anthropic',
         'selenium',
@@ -24,7 +25,7 @@ setup(
     description="Real Estate ARV (After Repair Value) Calculator",
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
-    url="https://github.com/yourusername/realestate-arv-calculator",
+    url="https://github.com/powerfullri/realestate-arv-calculator",
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
