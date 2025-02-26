@@ -3,8 +3,7 @@ from setuptools import setup, find_packages
 setup(
     name="realestate_arv_app",
     version="1.0.0",
-    packages=find_packages(where="src"),
-    package_dir={"": "src"},
+    packages=find_packages(),
     install_requires=[
         'anthropic',
         'selenium',
